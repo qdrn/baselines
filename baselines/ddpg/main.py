@@ -13,6 +13,7 @@ from baselines.ddpg.memory import Memory
 from baselines.ddpg.noise import *
 
 import gym
+import gym_flowers
 import tensorflow as tf
 from mpi4py import MPI
 
