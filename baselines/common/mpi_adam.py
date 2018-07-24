@@ -70,7 +70,7 @@ def test_MpiAdam():
     tf.get_default_session().run(tf.global_variables_initializer())
 
     var_list = [a,b]
-    lossandgrad = U.function([], [loss, U.flatgrad(loss, var_list)], updates=[update_op])
+    lossandgrad = U.function([], [loss, U.flatgrad(loss, var_list)])
     adam = MpiAdam(var_list)
 
     for i in range(10):
