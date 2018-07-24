@@ -35,4 +35,4 @@ src
 
 MUJOCO_LOG.TXT
 
-
+*.sh
