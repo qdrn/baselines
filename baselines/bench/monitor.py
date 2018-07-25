@@ -7,7 +7,7 @@ from glob import glob
 import csv
 import os.path as osp
 import json
-import numpy as np
+
 
 class Monitor(Wrapper):
     EXT = "monitor.csv"
@@ -92,6 +92,7 @@ class Monitor(Wrapper):
 
     def get_episode_times(self):
         return self.episode_times
+
 
 class LoadMonitorResultsError(Exception):
     pass

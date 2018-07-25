@@ -103,6 +103,8 @@ def launch(
     # Configure logging
     if rank == 0:
         if logdir or logger.get_dir() is None:
+            if logdir:
+                logdir = logdir + env + '/' + str(seed)
             logger.configure(dir=logdir)
     else:
         logger.configure()

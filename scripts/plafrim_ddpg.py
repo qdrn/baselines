@@ -36,7 +36,7 @@ with open(filename, 'w') as f:
 
     for seed in seeds:
         name = "DDPG_env:{}_seed:{}_date:{}".format(env, seed, '$(date "+%d%m%y-%H%M-%3N")')
-        logdir = PATH_TO_RESULTS + env + '/' + str(seed)
+        logdir = PATH_TO_RESULTS
         f.write('echo "=================> %s";\n' % name)
         f.write('echo "=================> %s" >> log.txt;\n' % name)
         f.write(f"$EXP_INTERP {PATH_TO_SCRIPT} --env-id={env} --seed={seed} --nb-epochs={epochs}"
