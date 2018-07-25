@@ -1,4 +1,5 @@
 import os
+from os import path
 import time
 from collections import deque
 import pickle
@@ -30,13 +31,15 @@ def train(env, nb_epochs, nb_epoch_cycles, render_eval, reward_scale, render, pa
     logger.info(str(agent.__dict__.items()))
 
     # Set up logging stuff only for a single worker.
+    logdir = logger.get_dir()
     if rank == 0:
-        saver = tf.train.Saver()
+        saver = tf.train.Saver(save_relative_paths=True)
     else:
         saver = None
 
     step = 0
     episode = 0
+    best_score = -1000
     eval_episode_rewards_history = deque(maxlen=100)
     episode_rewards_history = deque(maxlen=100)
     with U.single_threaded_session() as sess:
@@ -137,6 +140,17 @@ def train(env, nb_epochs, nb_epoch_cycles, render_eval, reward_scale, render, pa
                             eval_episode_rewards_history.append(eval_episode_reward)
                             eval_episode_reward = 0.
 
+                    # save the policy if it's better than the previous ones
+                    if np.mean(eval_episode_rewards) > best_score:
+                        best_score = np.mean(eval_episode_rewards)
+                        logger.info('New best score: {}. Saving policy to {} ...'.format(best_score, logdir))
+                        if not os.path.exists(logdir + '/tf_save/'):
+                            os.mkdir(logdir + '/tf_save/')
+                        for file in os.listdir(logdir + '/tf_save/'):
+                            if path.isfile(logdir + '/tf_save/' + file):
+                                os.remove(logdir + '/tf_save/' + file)
+                        saver.save(sess, logdir + '/tf_save/' + 'best_actor_step' + str(t) + '_score' + str(int(best_score)))
+
             mpi_size = MPI.COMM_WORLD.Get_size()
             # Log stats.
             # XXX shouldn't call np.mean on variable length lists
@@ -158,9 +172,9 @@ def train(env, nb_epochs, nb_epoch_cycles, render_eval, reward_scale, render, pa
             combined_stats['rollout/actions_std'] = np.std(epoch_actions)
             # Evaluation statistics.
             if eval_env is not None:
-                combined_stats['eval/return'] = eval_episode_rewards
+                combined_stats['eval/return'] = np.mean(eval_episode_rewards)
                 combined_stats['eval/return_history'] = np.mean(eval_episode_rewards_history)
-                combined_stats['eval/Q'] = eval_qs
+                combined_stats['eval/Q'] = np.mean(eval_qs)
                 combined_stats['eval/episodes'] = len(eval_episode_rewards)
             def as_scalar(x):
                 if isinstance(x, np.ndarray):
@@ -169,7 +183,7 @@ def train(env, nb_epochs, nb_epoch_cycles, render_eval, reward_scale, render, pa
                 elif np.isscalar(x):
                     return x
                 else:
-                    raise ValueError('expected scalar, got %s'%x)
+                    raise ValueError('expected scalar, got %s' % x)
             combined_stats_sums = MPI.COMM_WORLD.allreduce(np.array([as_scalar(x) for x in combined_stats.values()]))
             combined_stats = {k : v / mpi_size for (k,v) in zip(combined_stats.keys(), combined_stats_sums)}
 
@@ -181,7 +195,7 @@ def train(env, nb_epochs, nb_epoch_cycles, render_eval, reward_scale, render, pa
                 logger.record_tabular(key, combined_stats[key])
             logger.dump_tabular()
             logger.info('')
-            logdir = logger.get_dir()
+
             if rank == 0 and logdir:
                 if hasattr(env, 'get_state'):
                     with open(os.path.join(logdir, 'env_state.pkl'), 'wb') as f:
