@@ -97,8 +97,10 @@ class Monitor(Wrapper):
 class LoadMonitorResultsError(Exception):
     pass
 
+
 def get_monitor_files(dir):
     return glob(osp.join(dir, "*" + Monitor.EXT))
+
 
 def load_results(dir):
     import pandas
@@ -136,6 +138,7 @@ def load_results(dir):
     df['t'] -= min(header['t_start'] for header in headers)
     df.headers = headers # HACK to preserve backwards compatibility
     return df
+
 
 def test_monitor():
     env = gym.make("CartPole-v1")
