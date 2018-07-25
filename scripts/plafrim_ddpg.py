@@ -13,7 +13,8 @@ PATH_TO_INTERPRETER = "/home/alaversa/anaconda3/envs/py-3.6/bin/python"  # plafr
 
 env = 'ArmBall-v1'
 seeds = list(range(0, 10))
-epochs = 50
+epochs = 100
+n_eval_steps = 1000
 
 job_duration = datetime.timedelta(hours=4)
 batch_duration = job_duration  # * nb_runs
@@ -39,6 +40,6 @@ with open(filename, 'w') as f:
         logdir = PATH_TO_RESULTS
         f.write('echo "=================> %s";\n' % name)
         f.write('echo "=================> %s" >> log.txt;\n' % name)
-        f.write(f"$EXP_INTERP {PATH_TO_SCRIPT} --env-id={env} --seed={seed} --nb-epochs={epochs}"
-                f" --logdir={logdir} || (echo 'FAILURE' && echo 'FAILURE' >> log.txt) &\n")
+        f.write(f"$EXP_INTERP {PATH_TO_SCRIPT} --env-id={env} --seed={seed} --nb-epochs={epochs} --logdir={logdir}"
+                f" --evaluation --nb-eval-steps={n_eval_steps} || (echo 'FAILURE' && echo 'FAILURE' >> log.txt) &\n")
         f.write('wait\n')
