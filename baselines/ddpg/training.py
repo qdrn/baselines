@@ -14,19 +14,19 @@ from mpi4py import MPI
 
 
 def train(env, nb_epochs, nb_epoch_cycles, render_eval, reward_scale, render, param_noise, actor, critic,
-    normalize_returns, normalize_observations, critic_l2_reg, actor_lr, critic_lr, action_noise,
-    popart, gamma, clip_norm, nb_train_steps, nb_rollout_steps, nb_eval_steps, batch_size, memory,
-    tau=0.01, eval_env=None, param_noise_adaption_interval=50):
+          normalize_returns, normalize_observations, critic_l2_reg, actor_lr, critic_lr, action_noise,
+          popart, gamma, clip_norm, nb_train_steps, nb_rollout_steps, nb_eval_steps, batch_size, memory,
+          tau=0.01, eval_env=None, param_noise_adaption_interval=50):
     rank = MPI.COMM_WORLD.Get_rank()
 
     assert (np.abs(env.action_space.low) == env.action_space.high).all()  # we assume symmetric actions.
     max_action = env.action_space.high
     logger.info('scaling actions by {} before executing in env'.format(max_action))
     agent = DDPG(actor, critic, memory, env.observation_space.shape, env.action_space.shape,
-        gamma=gamma, tau=tau, normalize_returns=normalize_returns, normalize_observations=normalize_observations,
-        batch_size=batch_size, action_noise=action_noise, param_noise=param_noise, critic_l2_reg=critic_l2_reg,
-        actor_lr=actor_lr, critic_lr=critic_lr, enable_popart=popart, clip_norm=clip_norm,
-        reward_scale=reward_scale)
+                 gamma=gamma, tau=tau, normalize_returns=normalize_returns, normalize_observations=normalize_observations,
+                 batch_size=batch_size, action_noise=action_noise, param_noise=param_noise, critic_l2_reg=critic_l2_reg,
+                 actor_lr=actor_lr, critic_lr=critic_lr, enable_popart=popart, clip_norm=clip_norm,
+                 reward_scale=reward_scale)
     logger.info('Using agent with the following configuration:')
     logger.info(str(agent.__dict__.items()))
 
@@ -124,6 +124,7 @@ def train(env, nb_epochs, nb_epoch_cycles, render_eval, reward_scale, render, pa
                 # Evaluate.
                 eval_episode_rewards = []
                 eval_qs = []
+                success_history = []
                 if eval_env is not None:
                     eval_episode_reward = 0.
                     for t_rollout in range(nb_eval_steps):
@@ -139,6 +140,8 @@ def train(env, nb_epochs, nb_epoch_cycles, render_eval, reward_scale, render, pa
                             eval_episode_rewards.append(eval_episode_reward)
                             eval_episode_rewards_history.append(eval_episode_reward)
                             eval_episode_reward = 0.
+                            if 'is_success' in eval_info.keys():
+                                success_history.append(eval_info['is_success'])
 
                     # save the policy if it's better than the previous ones
                     if np.mean(eval_episode_rewards) > best_score:
@@ -176,6 +179,7 @@ def train(env, nb_epochs, nb_epoch_cycles, render_eval, reward_scale, render, pa
                 combined_stats['eval/return_history'] = np.mean(eval_episode_rewards_history)
                 combined_stats['eval/Q'] = np.mean(eval_qs)
                 combined_stats['eval/episodes'] = len(eval_episode_rewards)
+                combined_stats['eval/success_rate'] = np.mean(success_history)
             def as_scalar(x):
                 if isinstance(x, np.ndarray):
                     assert x.size == 1

@@ -12,8 +12,8 @@ PATH_TO_INTERPRETER = "/home/alaversa/anaconda3/envs/py-3.6/bin/python"  # plafr
 # PATH_TO_INTERPRETER = "/usr/local/bin/python3"  # MacBook 15"
 
 env = 'ArmBall-v1'
-seeds = list(range(0, 10))
-epochs = 100
+seeds = list(range(0, 4))
+epochs = 500
 n_eval_steps = 1000
 
 job_duration = datetime.timedelta(hours=4)

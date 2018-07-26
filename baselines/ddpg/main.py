@@ -27,7 +27,7 @@ def run(env_id, seed, noise_type, layer_norm, evaluation, **kwargs):
     env = gym.make(env_id)
     env = bench.Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)))
 
-    if evaluation and rank==0:
+    if evaluation and rank == 0:
         eval_env = gym.make(env_id)
         eval_env = bench.Monitor(eval_env, os.path.join(logger.get_dir(), 'gym_eval'))
         # env = bench.Monitor(env, None)
@@ -71,8 +71,8 @@ def run(env_id, seed, noise_type, layer_norm, evaluation, **kwargs):
     # Disable logging for rank != 0 to avoid noise.
     if rank == 0:
         start_time = time.time()
-    training.train(env=env, eval_env=eval_env, param_noise=param_noise,
-        action_noise=action_noise, actor=actor, critic=critic, memory=memory, **kwargs)
+    training.train(env=env, eval_env=eval_env, param_noise=param_noise, action_noise=action_noise,
+                   actor=actor, critic=critic, memory=memory, **kwargs)
     env.close()
     if eval_env is not None:
         eval_env.close()
