@@ -44,4 +44,4 @@ with open(filename, 'w') as f:
         f.write(f"$EXP_INTERP {PATH_TO_SCRIPT} --env-id={env} --seed={seed} --nb-epochs={epochs} --logdir={logdir}"
                 f" --evaluation --nb-eval-steps={n_eval_steps} || (echo 'FAILURE' && echo 'FAILURE' >> log.txt) &\n")
         f.write("agpu=$(((agpu+1)%ngpu))\n")
-        # f.write('wait\n')
+    f.write('wait\n')
