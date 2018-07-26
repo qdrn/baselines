@@ -40,6 +40,7 @@ with open(filename, 'w') as f:
         logdir = PATH_TO_RESULTS
         f.write('echo "=================> %s";\n' % name)
         f.write('echo "=================> %s" >> log.txt;\n' % name)
+        f.write('export CUDA_VISIBLE_DEVICES=$agpu\n')
         f.write(f"$EXP_INTERP {PATH_TO_SCRIPT} --env-id={env} --seed={seed} --nb-epochs={epochs} --logdir={logdir}"
                 f" --evaluation --nb-eval-steps={n_eval_steps} || (echo 'FAILURE' && echo 'FAILURE' >> log.txt) &\n")
         f.write("agpu=$(((agpu+1)%ngpu))\n")
