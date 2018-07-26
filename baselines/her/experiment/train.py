@@ -24,9 +24,8 @@ def mpi_average(value):
     return mpi_moments(np.array(value))[0]
 
 
-def train(policy, rollout_worker, evaluator,
-          n_epochs, n_test_rollouts, n_cycles, n_batches, policy_save_interval,
-          save_policies, **kwargs):
+def train(policy, rollout_worker, evaluator, n_epochs, n_test_rollouts, n_cycles, n_batches,
+          policy_save_interval, save_policies, **kwargs):
     rank = MPI.COMM_WORLD.Get_rank()
 
     latest_policy_path = os.path.join(logger.get_dir(), 'policy_latest.pkl')
@@ -82,10 +81,8 @@ def train(policy, rollout_worker, evaluator,
             assert local_uniform[0] != root_uniform[0]
 
 
-def launch(
-    env, logdir, n_epochs, num_cpu, seed, replay_strategy, policy_save_interval, clip_return,
-    override_params={}, save_policies=True
-):
+def launch(env, logdir, n_epochs, num_cpu, seed, replay_strategy, policy_save_interval, clip_return,
+           override_params={}, save_policies=True):
     # Fork for multi-CPU MPI implementation.
     if num_cpu > 1:
         try:

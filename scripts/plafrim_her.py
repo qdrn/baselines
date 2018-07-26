@@ -15,7 +15,7 @@ env = 'ArmBall-v0'
 seeds = list(range(0, 10))
 replay_strategy = 'future'
 n_cpu = 19
-epochs = 15
+epochs = 50
 
 job_duration = datetime.timedelta(hours=4)
 batch_duration = job_duration  # * nb_runs

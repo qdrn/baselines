@@ -27,14 +27,14 @@ with open(filename, 'w') as f:
     f.write('#!/bin/sh\n')
     f.write('#SBATCH -N 1\n')
     f.write('#SBATCH --exclusive\n')
-    # f.write('#SBATCH --mincpus 20\n')
     f.write('#SBATCH --partition=court_sirocco\n')
     f.write('#SBATCH --time={}\n'.format(duration_string))
     f.write('#SBATCH --error={}.err\n'.format(filename))
     f.write('#SBATCH --output={}.out\n'.format(filename))
     f.write('rm log.txt; \n')
     f.write("export EXP_INTERP='%s' ;\n" % PATH_TO_INTERPRETER)
-
+    f.write('ngpu="$(nvidia-smi -L | tee /dev/stderr | wc -l)"\n')
+    f.write('agpu=0\n')
     for seed in seeds:
         name = "DDPG_env:{}_seed:{}_date:{}".format(env, seed, '$(date "+%d%m%y-%H%M-%3N")')
         logdir = PATH_TO_RESULTS
@@ -42,4 +42,5 @@ with open(filename, 'w') as f:
         f.write('echo "=================> %s" >> log.txt;\n' % name)
         f.write(f"$EXP_INTERP {PATH_TO_SCRIPT} --env-id={env} --seed={seed} --nb-epochs={epochs} --logdir={logdir}"
                 f" --evaluation --nb-eval-steps={n_eval_steps} || (echo 'FAILURE' && echo 'FAILURE' >> log.txt) &\n")
-        f.write('wait\n')
+        f.write("agpu=$(((agpu+1)%ngpu))\n")
+        # f.write('wait\n')

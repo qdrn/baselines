@@ -11,6 +11,9 @@ DEFAULT_ENV_PARAMS = {
     'FetchReach-v1': {
         'n_cycles': 10,
     },
+    'ArmBall-v0': {
+        'n_cycles': 10,
+    },
 }
 
 
