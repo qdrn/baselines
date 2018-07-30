@@ -2,6 +2,7 @@ import argparse
 import time
 import os
 import logging
+import json
 from baselines import logger, bench
 from baselines.common.misc_util import (
     set_global_seeds,
@@ -139,6 +140,11 @@ if __name__ == '__main__':
     assert logdir is not None
     os.makedirs(logdir, exist_ok=True)
     del args['logdir']
+
+    args['replay_strategy'] = 'ddpg_baselines'
+    with open(os.path.join(logger.get_dir(), 'params.json'), 'w') as f:
+        json.dump(args, f)
+    del args['replay_strategy']
 
     # if MPI.COMM_WORLD.Get_rank() == 0:
     #     logger.configure()

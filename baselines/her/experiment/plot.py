@@ -66,19 +66,30 @@ for curr_path in paths:
     if not results:
         print('skipping {}'.format(curr_path))
         continue
-    print('loading {} ({})'.format(curr_path, len(results['epoch'])))
+    # print('loading {} ({})'.format(curr_path, len(results['epoch'])))
     with open(os.path.join(curr_path, 'params.json'), 'r') as f:
         params = json.load(f)
 
-    success_rate = np.array(results['test/success_rate'])
-    epoch = np.array(results['epoch']) + 1
-    env_id = params['env_name']
+    # success_rate = np.array(results['test/success_rate'])
+    # epoch = np.array(results['epoch']) + 1
+    # env_id = params['env_name']
     replay_strategy = params['replay_strategy']
 
     if replay_strategy == 'future':
         config = 'her'
+        env_id = params['env_name']
+        epoch = (np.array(results['epoch']) + 1) * 10 * 19 * 2
+        success_rate = np.array(results['test/success_rate'])
+    elif replay_strategy == 'ddpg_baselines':
+        config = 'ddpg_baselines'
+        env_id = params['env_id']
+        epoch = np.array(results['total/episodes'])
+        success_rate = np.array(results['eval/success_rate'])
     else:
         config = 'ddpg'
+        env_id = params['env_name']
+        epoch = (np.array(results['epoch']) + 1) * 10 * 19 * 2
+        success_rate = np.array(results['test/success_rate'])
     if 'Dense' in env_id:
         config += '-dense'
     else:
