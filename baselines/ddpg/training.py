@@ -37,8 +37,6 @@ def train(env, nb_epochs, nb_epoch_cycles, render_eval, reward_scale, render, pa
     else:
         saver = None
 
-    step = 0
-    episode = 0
     best_score = -1000
     eval_episode_rewards_history = deque(maxlen=100)
     episode_rewards_history = deque(maxlen=100)
@@ -57,14 +55,10 @@ def train(env, nb_epochs, nb_epoch_cycles, render_eval, reward_scale, render, pa
         episodes = 0
         t = 0
 
-        epoch = 0
         start_time = time.time()
 
         epoch_episode_rewards = []
         epoch_episode_steps = []
-        epoch_episode_eval_rewards = []
-        epoch_episode_eval_steps = []
-        epoch_start_time = time.time()
         epoch_actions = []
         epoch_qs = []
         epoch_episodes = 0
@@ -189,7 +183,7 @@ def train(env, nb_epochs, nb_epoch_cycles, render_eval, reward_scale, render, pa
                 else:
                     raise ValueError('expected scalar, got %s' % x)
             combined_stats_sums = MPI.COMM_WORLD.allreduce(np.array([as_scalar(x) for x in combined_stats.values()]))
-            combined_stats = {k : v / mpi_size for (k,v) in zip(combined_stats.keys(), combined_stats_sums)}
+            combined_stats = {k: v / mpi_size for (k,v) in zip(combined_stats.keys(), combined_stats_sums)}
 
             # Total statistics.
             combined_stats['total/epochs'] = epoch + 1
