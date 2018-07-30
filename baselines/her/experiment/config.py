@@ -14,6 +14,9 @@ DEFAULT_ENV_PARAMS = {
     'ArmBall-v0': {
         'n_cycles': 10,
     },
+    'ArmBallDense-v0': {
+        'n_cycles': 10,
+    },
 }
 
 
