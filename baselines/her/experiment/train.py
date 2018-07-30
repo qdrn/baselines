@@ -25,7 +25,7 @@ def mpi_average(value):
 
 
 def train(policy, rollout_worker, evaluator, n_epochs, n_test_rollouts, n_cycles, n_batches,
-          policy_save_interval, save_policies, **kwargs):
+          policy_save_interval, save_policies, num_cpu, **kwargs):
     rank = MPI.COMM_WORLD.Get_rank()
 
     latest_policy_path = os.path.join(logger.get_dir(), 'policy_latest.pkl')
@@ -51,6 +51,7 @@ def train(policy, rollout_worker, evaluator, n_epochs, n_test_rollouts, n_cycles
 
         # record logs
         logger.record_tabular('epoch', epoch)
+        logger.record_tabular('env_epochs', (epoch + 1) * n_cycles * rollout_worker.rollout_batch_size * num_cpu)
         for key, val in evaluator.logs('test'):
             logger.record_tabular(key, mpi_average(val))
         for key, val in rollout_worker.logs('train'):
@@ -125,18 +126,6 @@ def launch(env, logdir, n_epochs, num_cpu, seed, replay_strategy, policy_save_in
     params = config.prepare_params(params)
     config.log_params(params, logger=logger)
 
-    if num_cpu == 1:
-        logger.warn()
-        logger.warn('*** Warning ***')
-        logger.warn(
-            'You are running HER with just a single MPI worker. This will work, but the ' +
-            'experiments that we report in Plappert et al. (2018, https://arxiv.org/abs/1802.09464) ' +
-            'were obtained with --num_cpu 19. This makes a significant difference and if you ' +
-            'are looking to reproduce those results, be aware of this. Please also refer to ' +
-            'https://github.com/openai/baselines/issues/314 for further details.')
-        logger.warn('****************')
-        logger.warn()
-
     dims = config.configure_dims(params)
     policy = config.configure_ddpg(dims=dims, params=params, clip_return=clip_return)
 
@@ -166,11 +155,10 @@ def launch(env, logdir, n_epochs, num_cpu, seed, replay_strategy, policy_save_in
     evaluator = RolloutWorker(params['make_env'], policy, dims, logger, **eval_params)
     evaluator.seed(rank_seed)
 
-    train(
-        logdir=logdir, policy=policy, rollout_worker=rollout_worker,
-        evaluator=evaluator, n_epochs=n_epochs, n_test_rollouts=params['n_test_rollouts'],
-        n_cycles=params['n_cycles'], n_batches=params['n_batches'],
-        policy_save_interval=policy_save_interval, save_policies=save_policies)
+    train(logdir=logdir, policy=policy, rollout_worker=rollout_worker,
+          evaluator=evaluator, n_epochs=n_epochs, n_test_rollouts=params['n_test_rollouts'],
+          n_cycles=params['n_cycles'], n_batches=params['n_batches'],
+          policy_save_interval=policy_save_interval, save_policies=save_policies, num_cpu=num_cpu)
 
 
 @click.command()

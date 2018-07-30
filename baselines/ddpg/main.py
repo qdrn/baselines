@@ -25,10 +25,14 @@ def run(env_id, seed, noise_type, layer_norm, evaluation, **kwargs):
 
     # Create envs.
     env = gym.make(env_id)
+    if 'ArmBall' in env_id:
+        env = gym.wrappers.FlattenDictWrapper(env, dict_keys=['observation', 'desired_goal'])
     env = bench.Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)))
 
     if evaluation and rank == 0:
         eval_env = gym.make(env_id)
+        if 'ArmBall' in env_id:
+            eval_env = gym.wrappers.FlattenDictWrapper(eval_env, dict_keys=['observation', 'desired_goal'])
         eval_env = bench.Monitor(eval_env, os.path.join(logger.get_dir(), 'gym_eval'))
         # env = bench.Monitor(env, None)
     else:
