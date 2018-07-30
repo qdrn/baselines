@@ -40,7 +40,7 @@ with open(filename, 'w') as f:
     f.write("export EXP_INTERP='%s' ;\n" % PATH_TO_INTERPRETER)
     f.write('ngpu="$(nvidia-smi -L | tee /dev/stderr | wc -l)"\n')
     f.write('agpu=0\n')
-    for env in params_iterator:
+    for (env, ) in params_iterator:
         for seed in seeds:
             name = "DDPG_env:{}_seed:{}_date:{}".format(env, seed, '$(date "+%d%m%y-%H%M-%3N")')
             logdir = PATH_TO_RESULTS
