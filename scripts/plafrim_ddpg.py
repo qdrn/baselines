@@ -27,7 +27,7 @@ minutes, seconds = divmod(batch_duration.total_seconds(), 60)
 hours, minutes = divmod(minutes, 60)
 duration_string = "{:02.0f}:{:02.0f}:{:02.0f}".format(hours, minutes, seconds)
 
-filename = f'DDPG_env_{env}_trials_{seeds[0]}_{seeds[-1]}.sh'
+filename = f'DDPG_trials_{seeds[0]}_{seeds[-1]}.sh'
 with open(filename, 'w') as f:
     f.write('#!/bin/sh\n')
     f.write('#SBATCH -N 1\n')
