@@ -4,7 +4,7 @@
 import datetime
 import itertools
 
-PATH_TO_RESULTS = "/projets/flowers/adrien/baselines/results/her/"  # plafrim
+PATH_TO_RESULTS = "/projets/flowers/adrien/baselines/results/her_ncpu/"  # plafrim
 PATH_TO_SCRIPT = "/projets/flowers/adrien/baselines/baselines/her/experiment/train.py"  # plafrim
 PATH_TO_INTERPRETER = "/home/alaversa/anaconda3/envs/py-3.6cpu/bin/python"  # plafrim
 
@@ -15,7 +15,7 @@ PATH_TO_INTERPRETER = "/home/alaversa/anaconda3/envs/py-3.6cpu/bin/python"  # pl
 env = 'ArmBallDense-v0'
 seeds = list(range(0, 5))
 replay_strategies = ['future', 'none']
-n_cpu = 19
+n_cpu = 10
 epochs = 50
 
 params_iterator = list(itertools.product(seeds, replay_strategies))

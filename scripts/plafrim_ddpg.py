@@ -12,12 +12,13 @@ PATH_TO_INTERPRETER = "/home/alaversa/anaconda3/envs/py-3.6/bin/python"  # plafr
 # PATH_TO_SCRIPT = "/Users/adrien/Documents/post-doc/baselines/baselines/ddpg/main.py"  # MacBook 15"
 # PATH_TO_INTERPRETER = "/usr/local/bin/python3"  # MacBook 15"
 
-envs = ['ArmBallDense-v0', 'ArmBall-v0']
+envs = ['ArmBall-v0']
 seeds = list(range(0, 4))
 epochs = 600
 n_eval_steps = 1000
 actor_lr = 1e-3
 batch_size = 256
+noise = 'normal_0.2'
 
 params_iterator = list(itertools.product(envs))
 
@@ -47,7 +48,7 @@ with open(filename, 'w') as f:
             f.write('echo "=================> %s";\n' % name)
             f.write('echo "=================> %s" >> log.txt;\n' % name)
             f.write('export CUDA_VISIBLE_DEVICES=$agpu\n')
-            f.write(f"$EXP_INTERP {PATH_TO_SCRIPT} --env-id={env} --seed={seed} --nb-epochs={epochs} --actor-lr={actor_lr}"
-                    f" --logdir={logdir} --evaluation --nb-eval-steps={n_eval_steps} --batch-size={batch_size} || (echo 'FAILURE' && echo 'FAILURE' >> log.txt) &\n")
+            f.write(f"$EXP_INTERP {PATH_TO_SCRIPT} --env_name={env} --seed={seed} --nb-epochs={epochs} --actor-lr={actor_lr}"
+                    f" --noise-type={noise} --logdir={logdir} --evaluation --nb-eval-steps={n_eval_steps} --batch-size={batch_size} || (echo 'FAILURE' && echo 'FAILURE' >> log.txt) &\n")
             f.write("agpu=$(((agpu+1)%ngpu))\n")
         f.write('wait\n')

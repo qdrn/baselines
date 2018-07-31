@@ -118,6 +118,7 @@ def launch(env, logdir, n_epochs, num_cpu, seed, replay_strategy, policy_save_in
     params = config.DEFAULT_PARAMS
     params['env_name'] = env
     params['replay_strategy'] = replay_strategy
+    params['num_cpu'] = num_cpu
     if env in config.DEFAULT_ENV_PARAMS:
         params.update(config.DEFAULT_ENV_PARAMS[env])  # merge env-specific parameters in
     params.update(**override_params)  # makes it possible to override any parameter

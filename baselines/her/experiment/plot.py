@@ -66,9 +66,13 @@ for curr_path in paths:
     if not results:
         print('skipping {}'.format(curr_path))
         continue
-    # print('loading {} ({})'.format(curr_path, len(results['epoch'])))
-    with open(os.path.join(curr_path, 'params.json'), 'r') as f:
-        params = json.load(f)
+    if 'RGE-FI' in curr_path:
+        with open(os.path.join(curr_path, 'config.json'), 'r') as f:
+            params = json.load(f)
+    else:
+        # print('loading {} ({})'.format(curr_path, len(results['epoch'])))
+        with open(os.path.join(curr_path, 'params.json'), 'r') as f:
+            params = json.load(f)
 
     # success_rate = np.array(results['test/success_rate'])
     # epoch = np.array(results['epoch']) + 1
@@ -85,11 +89,17 @@ for curr_path in paths:
         env_id = params['env_id']
         epoch = np.array(results['total/episodes'])
         success_rate = np.array(results['eval/success_rate'])
+    elif replay_strategy == 'RGE-FI':
+        config = 'RGE-FI'
+        env_id = 'ArmBall-v0'
+        epoch = np.array(results['total/episodes'])
+        success_rate = np.array(results['eval/success_rate'])
     else:
         config = 'ddpg'
         env_id = params['env_name']
         epoch = (np.array(results['epoch']) + 1) * 10 * 19 * 2
         success_rate = np.array(results['test/success_rate'])
+
     if 'Dense' in env_id:
         config += '-dense'
     else:

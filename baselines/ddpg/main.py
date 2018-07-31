@@ -18,21 +18,21 @@ import gym_flowers
 import tensorflow as tf
 from mpi4py import MPI
 
-def run(env_id, seed, noise_type, layer_norm, evaluation, **kwargs):
+def run(env_name, seed, noise_type, layer_norm, evaluation, **kwargs):
     # Configure things.
     rank = MPI.COMM_WORLD.Get_rank()
     if rank != 0:
         logger.set_level(logger.DISABLED)
 
     # Create envs.
-    env = gym.make(env_id)
-    if 'ArmBall' in env_id:
+    env = gym.make(env_name)
+    if 'ArmBall' in env_name:
         env = gym.wrappers.FlattenDictWrapper(env, dict_keys=['observation', 'desired_goal'])
     env = bench.Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)))
 
     if evaluation and rank == 0:
-        eval_env = gym.make(env_id)
-        if 'ArmBall' in env_id:
+        eval_env = gym.make(env_name)
+        if 'ArmBall' in env_name:
             eval_env = gym.wrappers.FlattenDictWrapper(eval_env, dict_keys=['observation', 'desired_goal'])
         eval_env = bench.Monitor(eval_env, os.path.join(logger.get_dir(), 'gym_eval'))
         # env = bench.Monitor(env, None)
@@ -88,7 +88,7 @@ def run(env_id, seed, noise_type, layer_norm, evaluation, **kwargs):
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('--env-id', type=str, default='HalfCheetah-v2')
+    parser.add_argument('--env_name', type=str, default='HalfCheetah-v2')
     boolean_flag(parser, 'render-eval', default=False)
     boolean_flag(parser, 'layer-norm', default=True)
     boolean_flag(parser, 'render', default=False)
@@ -132,7 +132,7 @@ if __name__ == '__main__':
     if rank == 0:
         if logdir or logger.get_dir() is None:
             if logdir:
-                logdir = logdir + args['env_id'] + '/' + str(args['seed'])
+                logdir = logdir + args['env_name'] + '/' + str(args['seed'])
             logger.configure(dir=logdir)
     else:
         logger.configure()
