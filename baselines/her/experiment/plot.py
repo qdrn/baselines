@@ -70,7 +70,10 @@ for curr_path in paths:
         with open(os.path.join(curr_path, 'config.json'), 'r') as f:
             params = json.load(f)
     else:
-        # print('loading {} ({})'.format(curr_path, len(results['epoch'])))
+        try:
+            print('loading {} ({})'.format(curr_path, len(results['epoch'])))
+        except:
+            pass
         with open(os.path.join(curr_path, 'params.json'), 'r') as f:
             params = json.load(f)
 
@@ -82,11 +85,18 @@ for curr_path in paths:
     if replay_strategy == 'future':
         config = 'her'
         env_id = params['env_name']
-        epoch = (np.array(results['epoch']) + 1) * 10 * 19 * 2
+        if 'num_cpu' in params.keys():
+            epoch = (np.array(results['epoch']) + 1) * 10 * 2 * params['num_cpu']
+            config += '_ncpu' + str(params['num_cpu'])
+        else:
+            epoch = (np.array(results['epoch']) + 1) * 10 * 2 * 19
         success_rate = np.array(results['test/success_rate'])
     elif replay_strategy == 'ddpg_baselines':
         config = 'ddpg_baselines'
-        env_id = params['env_id']
+        try:
+            env_id = params['env_id']
+        except:
+            env_id = params['env_name']
         epoch = np.array(results['total/episodes'])
         success_rate = np.array(results['eval/success_rate'])
     elif replay_strategy == 'RGE-FI':
@@ -97,7 +107,11 @@ for curr_path in paths:
     else:
         config = 'ddpg'
         env_id = params['env_name']
-        epoch = (np.array(results['epoch']) + 1) * 10 * 19 * 2
+        if 'num_cpu' in params.keys():
+            epoch = (np.array(results['epoch']) + 1) * 10 * 2 * params['num_cpu']
+            config += '_ncpu' + str(params['num_cpu'])
+        else:
+            epoch = (np.array(results['epoch']) + 1) * 10 * 19 * 2
         success_rate = np.array(results['test/success_rate'])
 
     if 'Dense' in env_id:

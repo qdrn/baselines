@@ -12,13 +12,13 @@ PATH_TO_INTERPRETER = "/home/alaversa/anaconda3/envs/py-3.6cpu/bin/python"  # pl
 # PATH_TO_INTERPRETER = "/usr/local/bin/python3"  # MacBook 15"
 # PATH_TO_RESULTS = "/Users/adrien/Documents/post-doc/baselines/results/"  # MacBook 15"
 
-env = 'ArmBallDense-v0'
+envs = ['ArmBalls-v0', 'ArmBallsDense-v0']
 seeds = list(range(0, 5))
 replay_strategies = ['future', 'none']
 n_cpu = 10
 epochs = 50
 
-params_iterator = list(itertools.product(seeds, replay_strategies))
+params_iterator = list(itertools.product(envs, replay_strategies, seeds))
 
 job_duration = datetime.timedelta(hours=4)
 batch_duration = job_duration  # * nb_runs
@@ -26,7 +26,7 @@ minutes, seconds = divmod(batch_duration.total_seconds(), 60)
 hours, minutes = divmod(minutes, 60)
 duration_string = "{:02.0f}:{:02.0f}:{:02.0f}".format(hours, minutes, seconds)
 
-filename = f'HER_env_{env}_trials_{seeds[0]}_{seeds[-1]}.sh'
+filename = f'HER_trials_{seeds[0]}_{seeds[-1]}.sh'
 with open(filename, 'w') as f:
     f.write('#!/bin/sh\n')
     f.write('#SBATCH -N 1\n')
@@ -38,7 +38,7 @@ with open(filename, 'w') as f:
     f.write('#SBATCH --output={}.out\n'.format(filename))
     f.write('rm log.txt; \n')
     f.write("export EXP_INTERP='%s' ;\n" % PATH_TO_INTERPRETER)
-    for (seed, replay_strategy) in params_iterator:
+    for (env, replay_strategy, seed) in params_iterator:
         name = "HER_env:{}_seed:{}_date:{}".format(env, seed, '$(date "+%d%m%y-%H%M-%3N")')
         logdir = PATH_TO_RESULTS
         f.write('echo "=================> %s";\n' % name)
