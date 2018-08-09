@@ -12,7 +12,7 @@ PATH_TO_INTERPRETER = "/home/alaversa/anaconda3/envs/py-3.6cpu/bin/python"  # pl
 # PATH_TO_INTERPRETER = "/usr/local/bin/python3"  # MacBook 15"
 # PATH_TO_RESULTS = "/Users/adrien/Documents/post-doc/baselines/results/"  # MacBook 15"
 
-envs = ['ArmBalls-v0', 'ArmBallsDense-v0']
+envs = ['ArmBall-v0', 'ArmBallDense-v0']
 seeds = list(range(0, 5))
 replay_strategies = ['future', 'none']
 n_cpu = 1
@@ -26,7 +26,7 @@ minutes, seconds = divmod(batch_duration.total_seconds(), 60)
 hours, minutes = divmod(minutes, 60)
 duration_string = "{:02.0f}:{:02.0f}:{:02.0f}".format(hours, minutes, seconds)
 
-filename = f'HER_trials_{seeds[0]}_{seeds[-1]}.sh'
+filename = f'HER_ncpu_{n_cpu}_{seeds[0]}_{seeds[-1]}.sh'
 with open(filename, 'w') as f:
     f.write('#!/bin/sh\n')
     f.write('#SBATCH -N 1\n')
