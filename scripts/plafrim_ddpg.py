@@ -12,7 +12,7 @@ PATH_TO_INTERPRETER = "/home/alaversa/anaconda3/envs/py-3.6/bin/python"  # plafr
 # PATH_TO_SCRIPT = "/Users/adrien/Documents/post-doc/baselines/baselines/ddpg/main.py"  # MacBook 15"
 # PATH_TO_INTERPRETER = "/usr/local/bin/python3"  # MacBook 15"
 
-envs = ['ArmBall-v0']
+envs = ['ArmBallDense-v0']
 seeds = list(range(0, 4))
 epochs = 800
 n_eval_steps = 1000
@@ -28,7 +28,7 @@ minutes, seconds = divmod(batch_duration.total_seconds(), 60)
 hours, minutes = divmod(minutes, 60)
 duration_string = "{:02.0f}:{:02.0f}:{:02.0f}".format(hours, minutes, seconds)
 
-filename = f'DDPG_trials_{seeds[0]}_{seeds[-1]}.sh'
+filename = f'DDPG_{seeds[0]}_{seeds[-1]}.sh'
 with open(filename, 'w') as f:
     f.write('#!/bin/sh\n')
     f.write('#SBATCH -N 1\n')
