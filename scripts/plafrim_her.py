@@ -16,7 +16,7 @@ envs = ['ArmBalls-v0', 'ArmBallsDense-v0']
 seeds = list(range(0, 5))
 replay_strategies = ['future', 'none']
 n_cpu = 1
-epochs = 1000 / n_cpu
+epochs = int(1000 / n_cpu)
 
 params_iterator = list(itertools.product(envs, replay_strategies, seeds))
 
