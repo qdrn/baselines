@@ -4,7 +4,7 @@
 import datetime
 import itertools
 
-PATH_TO_RESULTS = "/projets/flowers/adrien/baselines/results/her_ncpu/"  # plafrim
+PATH_TO_RESULTS = "/projets/flowers/adrien/baselines/results/her/"  # plafrim
 PATH_TO_SCRIPT = "/projets/flowers/adrien/baselines/baselines/her/experiment/train.py"  # plafrim
 PATH_TO_INTERPRETER = "/home/alaversa/anaconda3/envs/py-3.6cpu/bin/python"  # plafrim
 
@@ -15,8 +15,8 @@ PATH_TO_INTERPRETER = "/home/alaversa/anaconda3/envs/py-3.6cpu/bin/python"  # pl
 envs = ['ArmBalls-v0', 'ArmBallsDense-v0']
 seeds = list(range(0, 5))
 replay_strategies = ['future', 'none']
-n_cpu = 10
-epochs = 50
+n_cpu = 1
+epochs = 1000 / n_cpu
 
 params_iterator = list(itertools.product(envs, replay_strategies, seeds))
 
@@ -39,8 +39,9 @@ with open(filename, 'w') as f:
     f.write('rm log.txt; \n')
     f.write("export EXP_INTERP='%s' ;\n" % PATH_TO_INTERPRETER)
     for (env, replay_strategy, seed) in params_iterator:
-        name = "HER_env:{}_seed:{}_date:{}".format(env, seed, '$(date "+%d%m%y-%H%M-%3N")')
-        logdir = PATH_TO_RESULTS
+        date = '$(date "+%d%m%y-%H%M-%3N")'
+        name = f"{env}/{replay_strategy}/{date}"
+        logdir = PATH_TO_RESULTS + name
         f.write('echo "=================> %s";\n' % name)
         f.write('echo "=================> %s" >> log.txt;\n' % name)
         f.write(f"$EXP_INTERP {PATH_TO_SCRIPT} --env={env} --replay_strategy={replay_strategy} --n_epochs={epochs}"

@@ -26,13 +26,13 @@ def run(env_name, seed, noise_type, layer_norm, evaluation, **kwargs):
 
     # Create envs.
     env = gym.make(env_name)
-    if 'ArmBall' in env_name:
+    if issubclass(type(env.unwrapped), gym.GoalEnv):
         env = gym.wrappers.FlattenDictWrapper(env, dict_keys=['observation', 'desired_goal'])
     env = bench.Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)))
 
     if evaluation and rank == 0:
         eval_env = gym.make(env_name)
-        if 'ArmBall' in env_name:
+        if issubclass(type(eval_env.unwrapped), gym.GoalEnv):
             eval_env = gym.wrappers.FlattenDictWrapper(eval_env, dict_keys=['observation', 'desired_goal'])
         eval_env = bench.Monitor(eval_env, os.path.join(logger.get_dir(), 'gym_eval'))
         # env = bench.Monitor(env, None)
@@ -131,8 +131,6 @@ if __name__ == '__main__':
     logdir = args['logdir']
     if rank == 0:
         if logdir or logger.get_dir() is None:
-            if logdir:
-                logdir = logdir + args['env_name'] + '/' + str(args['seed'])
             logger.configure(dir=logdir)
     else:
         logger.configure()

@@ -101,8 +101,6 @@ def launch(env, logdir, n_epochs, num_cpu, seed, replay_strategy, policy_save_in
     # Configure logging
     if rank == 0:
         if logdir or logger.get_dir() is None:
-            if logdir:
-                logdir = logdir + env + '/' + replay_strategy + '/' + str(seed)
             logger.configure(dir=logdir)
     else:
         logger.configure()

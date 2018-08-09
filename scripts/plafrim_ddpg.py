@@ -4,7 +4,7 @@
 import datetime
 import itertools
 
-PATH_TO_RESULTS = "/projets/flowers/adrien/baselines/results/ddpg_lr/"  # plafrim
+PATH_TO_RESULTS = "/projets/flowers/adrien/baselines/results/ddpg/"  # plafrim
 PATH_TO_SCRIPT = "/projets/flowers/adrien/baselines/baselines/ddpg/main.py"  # plafrim
 PATH_TO_INTERPRETER = "/home/alaversa/anaconda3/envs/py-3.6/bin/python"  # plafrim
 
@@ -14,7 +14,7 @@ PATH_TO_INTERPRETER = "/home/alaversa/anaconda3/envs/py-3.6/bin/python"  # plafr
 
 envs = ['ArmBall-v0']
 seeds = list(range(0, 4))
-epochs = 600
+epochs = 800
 n_eval_steps = 1000
 actor_lr = 1e-3
 batch_size = 256
@@ -43,12 +43,14 @@ with open(filename, 'w') as f:
     f.write('agpu=0\n')
     for (env, ) in params_iterator:
         for seed in seeds:
-            name = "DDPG_env:{}_seed:{}_date:{}".format(env, seed, '$(date "+%d%m%y-%H%M-%3N")')
-            logdir = PATH_TO_RESULTS
+            date = '$(date "+%d%m%y-%H%M-%3N")'
+            name = f"{env}/{date}"
+            logdir = PATH_TO_RESULTS + name
             f.write('echo "=================> %s";\n' % name)
             f.write('echo "=================> %s" >> log.txt;\n' % name)
             f.write('export CUDA_VISIBLE_DEVICES=$agpu\n')
-            f.write(f"$EXP_INTERP {PATH_TO_SCRIPT} --env_name={env} --seed={seed} --nb-epochs={epochs} --actor-lr={actor_lr}"
-                    f" --noise-type={noise} --logdir={logdir} --evaluation --nb-eval-steps={n_eval_steps} --batch-size={batch_size} || (echo 'FAILURE' && echo 'FAILURE' >> log.txt) &\n")
+            f.write(f"$EXP_INTERP {PATH_TO_SCRIPT} --env_name={env} --no-layer-norm --seed={seed} --nb-epochs={epochs}"
+                    f" --actor-lr={actor_lr} --noise-type={noise} --logdir={logdir} --evaluation"
+                    f" --nb-eval-steps={n_eval_steps} --batch-size={batch_size} || (echo 'FAILURE' && echo 'FAILURE' >> log.txt) &\n")
             f.write("agpu=$(((agpu+1)%ngpu))\n")
         f.write('wait\n')
