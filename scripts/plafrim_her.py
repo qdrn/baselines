@@ -12,7 +12,7 @@ PATH_TO_INTERPRETER = "/home/alaversa/anaconda3/envs/py-3.6cpu/bin/python"  # pl
 # PATH_TO_INTERPRETER = "/usr/local/bin/python3"  # MacBook 15"
 # PATH_TO_RESULTS = "/Users/adrien/Documents/post-doc/baselines/results/"  # MacBook 15"
 
-envs = ['ArmBalls-v0', 'ArmBallsDense-v0']
+envs = ['ArmBalls-v0']
 seeds = list(range(0, 5))
 replay_strategies = ['future', 'none']
 n_cpu = 10

@@ -17,6 +17,30 @@ DEFAULT_ENV_PARAMS = {
     'ArmBallDense-v0': {
         'n_cycles': 10,
     },
+    'ArmBalls-v0': {
+        'n_cycles': 10,
+    },
+    'ArmBallsDense-v0': {
+        'n_cycles': 10,
+    },
+    'ArmBallsRGB-v0': {
+        'n_cycles': 10,
+    },
+    'ArmBallsRGBDense-v0': {
+        'n_cycles': 10,
+    },
+    'ArmBallsVae-v0': {
+        'n_cycles': 10,
+    },
+    'ArmBallsVaeDense-v0': {
+        'n_cycles': 10,
+    },
+    'ArmBallsBetavae-v0': {
+        'n_cycles': 10,
+    },
+    'ArmBallsBetavaeDense-v0': {
+        'n_cycles': 10,
+    },
 }
 
 

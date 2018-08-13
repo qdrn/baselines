@@ -77,42 +77,26 @@ for curr_path in paths:
         with open(os.path.join(curr_path, 'params.json'), 'r') as f:
             params = json.load(f)
 
-    # success_rate = np.array(results['test/success_rate'])
+    success_rate = np.array(results['test/success_rate'])
     # epoch = np.array(results['epoch']) + 1
-    # env_id = params['env_name']
+    env_id = params['env_name']
     replay_strategy = params['replay_strategy']
 
     if replay_strategy == 'future':
         config = 'her'
-        env_id = params['env_name']
-        if 'num_cpu' in params.keys():
-            epoch = (np.array(results['epoch']) + 1) * 10 * 2 * params['num_cpu']
-            config += '_ncpu' + str(params['num_cpu'])
-        else:
-            epoch = (np.array(results['epoch']) + 1) * 10 * 2 * 19
-        success_rate = np.array(results['test/success_rate'])
+        epoch = (np.array(results['epoch']) + 1) * 10 * 2 * params['num_cpu']
+        config += '_ncpu' + str(params['num_cpu'])
     elif replay_strategy == 'ddpg_baselines':
         config = 'ddpg_baselines'
-        try:
-            env_id = params['env_id']
-        except:
-            env_id = params['env_name']
         epoch = np.array(results['total/episodes'])
-        success_rate = np.array(results['eval/success_rate'])
     elif replay_strategy == 'RGE-FI':
         config = 'RGE-FI'
         env_id = 'ArmBall-v0'
         epoch = np.array(results['total/episodes'])
-        success_rate = np.array(results['eval/success_rate'])
     else:
         config = 'ddpg'
-        env_id = params['env_name']
-        if 'num_cpu' in params.keys():
-            epoch = (np.array(results['epoch']) + 1) * 10 * 2 * params['num_cpu']
-            config += '_ncpu' + str(params['num_cpu'])
-        else:
-            epoch = (np.array(results['epoch']) + 1) * 10 * 19 * 2
-        success_rate = np.array(results['test/success_rate'])
+        epoch = (np.array(results['epoch']) + 1) * 10 * 2 * params['num_cpu']
+        config += '_ncpu' + str(params['num_cpu'])
 
     if 'Dense' in env_id:
         config += '-dense'
