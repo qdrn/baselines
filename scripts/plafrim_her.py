@@ -12,7 +12,7 @@ PATH_TO_INTERPRETER = "/home/alaversa/anaconda3/envs/py-3.6cpu/bin/python"
 # PATH_TO_INTERPRETER = "/usr/local/bin/python3"
 # PATH_TO_RESULTS = "/Users/adrien/Documents/post-doc/baselines/results/"
 
-envs = ['ArmBallsDense-v0']
+envs = ['ArmBallsRGB-v0']
 seeds = list(range(0, 4))
 replay_strategies = ['future', 'none']
 n_cpu = 10
@@ -45,5 +45,5 @@ with open(filename, 'w') as f:
         f.write('echo "=================> %s";\n' % name)
         f.write('echo "=================> %s" >> log.txt;\n' % name)
         f.write(f"$EXP_INTERP {PATH_TO_SCRIPT} --env={env} --replay_strategy={replay_strategy} --n_epochs={epochs}"
-                f" --seed={seed} --num_cpu={n_cpu} --logdir={logdir} || (echo 'FAILURE' && echo 'FAILURE' >> log.txt) &\n")
+                f" --seed={seed} --num_cpu={n_cpu} --logdir={logdir} --policy_save_interval=0 || (echo 'FAILURE' && echo 'FAILURE' >> log.txt) &\n")
         f.write('wait\n')
