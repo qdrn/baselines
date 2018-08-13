@@ -12,10 +12,10 @@ PATH_TO_INTERPRETER = "/home/alaversa/anaconda3/envs/py-3.6cpu/bin/python"
 # PATH_TO_INTERPRETER = "/usr/local/bin/python3"
 # PATH_TO_RESULTS = "/Users/adrien/Documents/post-doc/baselines/results/"
 
-envs = ['ArmBalls-v0']
+envs = ['ArmBallsVae-v0']
 seeds = list(range(0, 4))
 replay_strategies = ['future', 'none']
-n_cpu = 1
+n_cpu = 19
 epochs = int(1000 / n_cpu)
 
 params_iterator = list(itertools.product(envs, replay_strategies, seeds))
