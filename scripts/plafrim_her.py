@@ -26,7 +26,7 @@ minutes, seconds = divmod(batch_duration.total_seconds(), 60)
 hours, minutes = divmod(minutes, 60)
 duration_string = "{:02.0f}:{:02.0f}:{:02.0f}".format(hours, minutes, seconds)
 
-filename = f'HER_ncpu_{n_cpu}_{seeds[0]}_{seeds[-1]}.sh'
+filename = 'HER_{}.sh'.format(datetime.datetime.now().strftime("%d%m%y_%H%M"))
 with open(filename, 'w') as f:
     f.write('#!/bin/sh\n')
     f.write('#SBATCH -N 1\n')
