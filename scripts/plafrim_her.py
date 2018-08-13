@@ -5,15 +5,15 @@ import datetime
 import itertools
 
 PATH_TO_RESULTS = "/projets/flowers/adrien/baselines/results/her/"  # plafrim
-PATH_TO_SCRIPT = "/projets/flowers/adrien/baselines/baselines/her/experiment/train.py"  # plafrim
-PATH_TO_INTERPRETER = "/home/alaversa/anaconda3/envs/py-3.6cpu/bin/python"  # plafrim
+PATH_TO_SCRIPT = "/projets/flowers/adrien/baselines/baselines/her/experiment/train.py"
+PATH_TO_INTERPRETER = "/home/alaversa/anaconda3/envs/py-3.6cpu/bin/python"
 
 # PATH_TO_SCRIPT = "/Users/adrien/Documents/post-doc/baselines/baselines/her/experiment/train.py"  # MacBook 15"
-# PATH_TO_INTERPRETER = "/usr/local/bin/python3"  # MacBook 15"
-# PATH_TO_RESULTS = "/Users/adrien/Documents/post-doc/baselines/results/"  # MacBook 15"
+# PATH_TO_INTERPRETER = "/usr/local/bin/python3"
+# PATH_TO_RESULTS = "/Users/adrien/Documents/post-doc/baselines/results/"
 
-envs = ['ArmBalls-v0']
-seeds = list(range(0, 5))
+envs = ['ArmBallsDense-v0']
+seeds = list(range(0, 4))
 replay_strategies = ['future', 'none']
 n_cpu = 10
 epochs = int(1000 / n_cpu)
