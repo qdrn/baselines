@@ -1,6 +1,7 @@
 import click
 import numpy as np
 import pickle
+import gym
 
 from baselines import logger
 from baselines.common import set_global_seeds
@@ -13,7 +14,8 @@ from baselines.her.rollout import RolloutWorker
 @click.option('--seed', type=int, default=0)
 @click.option('--n_test_rollouts', type=int, default=10)
 @click.option('--render', type=int, default=1)
-def main(policy_file, seed, n_test_rollouts, render):
+@click.option('--record', type=int, default=0)
+def main(policy_file, seed, n_test_rollouts, render, record):
     set_global_seeds(seed)
 
     # Load policy.
@@ -41,7 +43,16 @@ def main(policy_file, seed, n_test_rollouts, render):
 
     for name in ['T', 'gamma', 'noise_eps', 'random_eps']:
         eval_params[name] = params[name]
-    
+
+    if record:
+        make_env = params['make_env']
+        def video_callable(episode_id):
+            return True
+        def make_record_env():
+            env = make_env()
+            return gym.wrappers.Monitor(env, '../../../results/video/' + env_name, force=True, video_callable=video_callable)
+        params['make_env'] = make_record_env
+
     evaluator = RolloutWorker(params['make_env'], policy, dims, logger, **eval_params)
     evaluator.seed(seed)
 
