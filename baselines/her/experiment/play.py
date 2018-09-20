@@ -52,7 +52,6 @@ def main(policy_file, seed, n_test_rollouts, render, record):
             env = make_env()
             return gym.wrappers.Monitor(env, '../../../results/video/' + env_name, force=True, video_callable=video_callable)
         params['make_env'] = make_record_env
-
     evaluator = RolloutWorker(params['make_env'], policy, dims, logger, **eval_params)
     evaluator.seed(seed)
 
