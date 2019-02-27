@@ -165,6 +165,10 @@ def function(inputs, outputs, updates=None, givens=None):
     outputs: [tf.Variable] or tf.Variable
         list of outputs or a single output to be returned from function. Returned
         value will also have the same shape.
+    updates: [tf.Operation] or tf.Operation
+        list of update functions or single update function that will be run whenever
+        the function is called. The return is ignored.
+
     """
     if isinstance(outputs, list):
         return _Function(inputs, outputs, updates, givens=givens)
@@ -182,6 +186,7 @@ class _Function(object):
             if not hasattr(inpt, 'make_feed_dict') and not (type(inpt) is tf.Tensor and len(inpt.op.inputs) == 0):
                 assert False, "inputs should all be placeholders, constants, or have a make_feed_dict method"
         self.inputs = inputs
+        self.input_names = {inp.name.split("/")[-1].split(":")[0]: inp for inp in inputs}
         updates = updates or []
         self.update_group = tf.group(*updates)
         self.outputs_update = list(outputs) + [self.update_group]
@@ -193,15 +198,17 @@ class _Function(object):
         else:
             feed_dict[inpt] = adjust_shape(inpt, value)
 
-    def __call__(self, *args):
-        assert len(args) <= len(self.inputs), "Too many arguments provided"
+    def __call__(self, *args, **kwargs):
+        assert len(args) + len(kwargs) <= len(self.inputs), "Too many arguments provided"
         feed_dict = {}
-        # Update the args
-        for inpt, value in zip(self.inputs, args):
-            self._feed_input(feed_dict, inpt, value)
         # Update feed dict with givens.
         for inpt in self.givens:
             feed_dict[inpt] = adjust_shape(inpt, feed_dict.get(inpt, self.givens[inpt]))
+        # Update the args
+        for inpt, value in zip(self.inputs, args):
+            self._feed_input(feed_dict, inpt, value)
+        for inpt_name, value in kwargs.items():
+            self._feed_input(feed_dict, self.input_names[inpt_name], value)
         results = get_session().run(self.outputs_update, feed_dict=feed_dict)[:-1]
         return results
 
@@ -293,7 +300,7 @@ def display_var_info(vars):
         if "/Adam" in name or "beta1_power" in name or "beta2_power" in name: continue
         v_params = np.prod(v.shape.as_list())
         count_params += v_params
-        if "/b:" in name or "/biases" in name: continue    # Wx+b, bias is not interesting to look at => count params, but not print
+        if "/b:" in name or "/bias" in name: continue    # Wx+b, bias is not interesting to look at => count params, but not print
         logger.info("   %s%s %i params %s" % (name, " "*(55-len(name)), v_params, str(v.shape)))
 
     logger.info("Total model parameters: %0.2f million" % (count_params*1e-6))
@@ -333,7 +340,7 @@ def save_state(fname, sess=None):
 
 def save_variables(save_path, variables=None, sess=None):
     sess = sess or get_session()
-    variables = variables or tf.trainable_variables()
+    variables = variables or tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
 
     ps = sess.run(variables)
     save_dict = {v.name: value for v, value in zip(variables, ps)}
@@ -344,7 +351,7 @@ def save_variables(save_path, variables=None, sess=None):
 
 def load_variables(load_path, variables=None, sess=None):
     sess = sess or get_session()
-    variables = variables or tf.trainable_variables()
+    variables = variables or tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
 
     loaded_params = joblib.load(os.path.expanduser(load_path))
     restores = []

@@ -30,13 +30,17 @@ class VecEnv(ABC):
     each observation becomes an batch of observations, and expected action is a batch of actions to
     be applied per-environment.
     """
+    closed = False
+    viewer = None
+
+    metadata = {
+        'render.modes': ['human', 'rgb_array']
+    }
 
     def __init__(self, num_envs, observation_space, action_space):
         self.num_envs = num_envs
         self.observation_space = observation_space
         self.action_space = action_space
-        self.closed = False
-        self.viewer = None # For rendering
 
     @abstractmethod
     def reset(self):
@@ -105,6 +109,7 @@ class VecEnv(ABC):
         bigimg = tile_images(imgs)
         if mode == 'human':
             self.get_viewer().imshow(bigimg)
+            return self.get_viewer().isopen
         elif mode == 'rgb_array':
             return bigimg
         else:

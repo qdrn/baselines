@@ -1,8 +1,6 @@
 from baselines.common.input import observation_input
 from baselines.common.tf_util import adjust_shape
 
-import tensorflow as tf
-
 # ================================================================
 # Placeholders
 # ================================================================
@@ -20,11 +18,11 @@ class TfInput(object):
         """Return the tf variable(s) representing the possibly postprocessed value
         of placeholder(s).
         """
-        raise NotImplemented()
+        raise NotImplementedError
 
     def make_feed_dict(data):
         """Given data input it to the placeholder(s)."""
-        raise NotImplemented()
+        raise NotImplementedError
 
 
 class PlaceholderTfInput(TfInput):
@@ -38,29 +36,6 @@ class PlaceholderTfInput(TfInput):
 
     def make_feed_dict(self, data):
         return {self._placeholder: adjust_shape(self._placeholder, data)}
-
-
-class Uint8Input(PlaceholderTfInput):
-    def __init__(self, shape, name=None):
-        """Takes input in uint8 format which is cast to float32 and divided by 255
-        before passing it to the model.
-
-        On GPU this ensures lower data transfer times.
-
-        Parameters
-        ----------
-        shape: [int]
-            shape of the tensor.
-        name: str
-            name of the underlying placeholder
-        """
-
-        super().__init__(tf.placeholder(tf.uint8, [None] + list(shape), name=name))
-        self._shape = shape
-        self._output = tf.cast(super().get(), tf.float32) / 255.0
-
-    def get(self):
-        return self._output
 
 
 class ObservationInput(PlaceholderTfInput):

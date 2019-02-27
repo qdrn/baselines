@@ -6,14 +6,14 @@ from collections import defaultdict
 import tensorflow as tf
 import numpy as np
 
+from baselines.common.vec_env.vec_video_recorder import VecVideoRecorder
 from baselines.common.vec_env.vec_frame_stack import VecFrameStack
-from baselines.common.cmd_util import common_arg_parser, parse_unknown_args, make_vec_env
+from baselines.common.cmd_util import common_arg_parser, parse_unknown_args, make_vec_env, make_env
 from baselines.common.tf_util import get_session
-from baselines import bench, logger
+from baselines import logger
 from importlib import import_module
 
 from baselines.common.vec_env.vec_normalize import VecNormalize
-from baselines.common import atari_wrappers, retro_wrappers
 
 try:
     from mpi4py import MPI
@@ -63,6 +63,8 @@ def train(args, extra_args):
     alg_kwargs.update(extra_args)
 
     env = build_env(args)
+    if args.save_video_interval != 0:
+        env = VecVideoRecorder(env, osp.join(logger.Logger.CURRENT.dir, "videos"), record_video_trigger=lambda x: x % args.save_video_interval == 0, video_length=args.save_video_length)
 
     if args.network:
         alg_kwargs['network'] = args.network
@@ -87,45 +89,29 @@ def build_env(args):
     if sys.platform == 'darwin': ncpu //= 2
     nenv = args.num_env or ncpu
     alg = args.alg
-    rank = MPI.COMM_WORLD.Get_rank() if MPI else 0
     seed = args.seed
 
     env_type, env_id = get_env_type(args.env)
 
-    if env_type == 'atari':
-        if alg == 'acer':
-            env = make_vec_env(env_id, env_type, nenv, seed)
-        elif alg == 'deepq':
-            env = atari_wrappers.make_atari(env_id)
-            env.seed(seed)
-            env = bench.Monitor(env, logger.get_dir())
-            env = atari_wrappers.wrap_deepmind(env, frame_stack=True, scale=True)
+    if env_type in {'atari', 'retro'}:
+        if alg == 'deepq':
+            env = make_env(env_id, env_type, seed=seed, wrapper_kwargs={'frame_stack': True})
         elif alg == 'trpo_mpi':
-            env = atari_wrappers.make_atari(env_id)
-            env.seed(seed)
-            env = bench.Monitor(env, logger.get_dir() and osp.join(logger.get_dir(), str(rank)))
-            env = atari_wrappers.wrap_deepmind(env)
-            # TODO check if the second seeding is necessary, and eventually remove
-            env.seed(seed)
+            env = make_env(env_id, env_type, seed=seed)
         else:
             frame_stack_size = 4
-            env = VecFrameStack(make_vec_env(env_id, env_type, nenv, seed), frame_stack_size)
-
-    elif env_type == 'retro':
-        import retro
-        gamestate = args.gamestate or 'Level1-1'
-        env = retro_wrappers.make_retro(game=args.env, state=gamestate, max_episode_steps=10000,
-                                        use_restricted_actions=retro.Actions.DISCRETE)
-        env.seed(args.seed)
-        env = bench.Monitor(env, logger.get_dir())
-        env = retro_wrappers.wrap_deepmind_retro(env)
+            env = make_vec_env(env_id, env_type, nenv, seed, gamestate=args.gamestate, reward_scale=args.reward_scale)
+            env = VecFrameStack(env, frame_stack_size)
 
     else:
-       get_session(tf.ConfigProto(allow_soft_placement=True,
-                                   intra_op_parallelism_threads=1,
-                                   inter_op_parallelism_threads=1))
+       config = tf.ConfigProto(allow_soft_placement=True,
+                               intra_op_parallelism_threads=1,
+                               inter_op_parallelism_threads=1)
+       config.gpu_options.allow_growth = True
+       get_session(config=config)
 
-       env = make_vec_env(env_id, env_type, args.num_env or 1, seed, reward_scale=args.reward_scale)
+       flatten_dict_observations = alg not in {'her'}
+       env = make_vec_env(env_id, env_type, args.num_env or 1, seed, reward_scale=args.reward_scale, flatten_dict_observations=flatten_dict_observations)
 
        if env_type == 'mujoco':
            env = VecNormalize(env)
@@ -134,6 +120,11 @@ def build_env(args):
 
 
 def get_env_type(env_id):
+    # Re-parse the gym registry, since we could have new envs since last time.
+    for env in gym.envs.registry.all():
+        env_type = env._entry_point.split(':')[0].split('.')[-1]
+        _game_envs[env_type].add(env.id)  # This is a set so add is idempotent
+
     if env_id in _game_envs.keys():
         env_type = env_id
         env_id = [g for g in _game_envs[env_type]][0]
@@ -149,7 +140,7 @@ def get_env_type(env_id):
 
 
 def get_default_network(env_type):
-    if env_type == 'atari':
+    if env_type in {'atari', 'retro'}:
         return 'cnn'
     else:
         return 'mlp'
@@ -196,12 +187,15 @@ def parse_cmdline_kwargs(args):
 
 
 
-def main():
+def main(args):
     # configure logger, disable logging in child MPI processes (with rank > 0)
 
     arg_parser = common_arg_parser()
-    args, unknown_args = arg_parser.parse_known_args()
+    args, unknown_args = arg_parser.parse_known_args(args)
     extra_args = parse_cmdline_kwargs(unknown_args)
+
+    if args.extra_import is not None:
+        import_module(args.extra_import)
 
     if MPI is None or MPI.COMM_WORLD.Get_rank() == 0:
         rank = 0
@@ -221,11 +215,16 @@ def main():
         logger.log("Running trained model")
         env = build_env(args)
         obs = env.reset()
-        def initialize_placeholders(nlstm=128,**kwargs):
-            return np.zeros((args.num_env, 2*nlstm)), np.zeros((1))
-        state, dones = initialize_placeholders(**extra_args)
+
+        state = model.initial_state if hasattr(model, 'initial_state') else None
+        dones = np.zeros((1,))
+
         while True:
-            actions, _, state, _ = model.step(obs,S=state, M=dones)
+            if state is not None:
+                actions, _, state, _ = model.step(obs,S=state, M=dones)
+            else:
+                actions, _, _, _ = model.step(obs)
+
             obs, _, done, _ = env.step(actions)
             env.render()
             done = done.any() if isinstance(done, np.ndarray) else done
@@ -235,5 +234,7 @@ def main():
 
         env.close()
 
+    return model
+
 if __name__ == '__main__':
-    main()
+    main(sys.argv)

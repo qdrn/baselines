@@ -1,3 +1,5 @@
+**Status:** Active (under active development, breaking changes may occur)
+
 <img src="data/logo.jpg" width=25% align="right" /> [![Build status](https://travis-ci.org/openai/baselines.svg?branch=master)](https://travis-ci.org/openai/baselines)
 
 # Baselines
@@ -15,7 +17,7 @@ sudo apt-get update && sudo apt-get install cmake libopenmpi-dev python3-dev zli
 ```
     
 ### Mac OS X
-Installation of system packages on Mac requires [Homebrew](https://brew.sh). With Homebrew installed, run the follwing:
+Installation of system packages on Mac requires [Homebrew](https://brew.sh). With Homebrew installed, run the following:
 ```bash
 brew install cmake openmpi
 ```
@@ -84,7 +86,7 @@ The hyperparameters for both network and the learning algorithm can be controlle
 ```bash
 python -m baselines.run --alg=ppo2 --env=Humanoid-v2 --network=mlp --num_timesteps=2e7 --ent_coef=0.1 --num_hidden=32 --num_layers=3 --value_network=copy
 ```
-will set entropy coeffient to 0.1, and construct fully connected network with 3 layers with 32 hidden units in each, and create a separate network for value function estimation (so that its parameters are not shared with the policy network, but the structure is the same)
+will set entropy coefficient to 0.1, and construct fully connected network with 3 layers with 32 hidden units in each, and create a separate network for value function estimation (so that its parameters are not shared with the policy network, but the structure is the same)
 
 See docstrings in [common/models.py](baselines/common/models.py) for description of network parameters for each type of model, and 
 docstring for [baselines/ppo2/ppo2.py/learn()](baselines/ppo2/ppo2.py#L152) for the description of the ppo2 hyperparamters. 
@@ -109,17 +111,9 @@ python -m baselines.run --alg=ppo2 --env=PongNoFrameskip-v4 --num_timesteps=0 --
 
 *NOTE:* At the moment Mujoco training uses VecNormalize wrapper for the environment which is not being saved correctly; so loading the models trained on Mujoco will not work well if the environment is recreated. If necessary, you can work around that by replacing RunningMeanStd by TfRunningMeanStd in [baselines/common/vec_env/vec_normalize.py](baselines/common/vec_env/vec_normalize.py#L12). This way, mean and std of environment normalizing wrapper will be saved in tensorflow variables and included in the model file; however, training is slower that way - hence not including it by default
 
+## Loading and vizualizing learning curves and other training metrics
+See [here](docs/viz/viz.ipynb) for instructions on how to load and display the training data. 
 
-## Using baselines with TensorBoard
-Baselines logger can save data in the TensorBoard format. To do so, set environment variables `OPENAI_LOG_FORMAT` and `OPENAI_LOGDIR`:
-```bash
-export OPENAI_LOG_FORMAT='stdout,log,csv,tensorboard' # formats are comma-separated, but for tensorboard you only really need the last one
-export OPENAI_LOGDIR=path/to/tensorboard/data
-```
-And you can now start TensorBoard with:
-```bash
-tensorboard --logdir=$OPENAI_LOGDIR
-```
 ## Subpackages
 
 - [A2C](baselines/a2c)
